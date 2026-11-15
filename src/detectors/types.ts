@@ -1,7 +1,7 @@
-import type { DetectedGesture } from '../types/gesture';
+import type { DetectionResult } from '../types/gesture';
 
 /** A gesture detection strategy that the recognition loop can run per frame. */
 export interface GestureDetector {
-  detect(video: HTMLVideoElement, timestampMs: number): DetectedGesture | null;
+  detect(video: HTMLVideoElement, timestampMs: number): DetectionResult;
   close(): void;
 }

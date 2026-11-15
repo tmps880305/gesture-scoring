@@ -1,10 +1,13 @@
 import { useCallback, useState } from 'react';
 import { CameraVideo } from './components/CameraVideo';
 import { CounterDisplay } from './components/CounterDisplay';
+import { DebugOverlay } from './components/DebugOverlay';
 import { GestureStatus } from './components/GestureStatus';
 import { ScreenFlash } from './components/common/ScreenFlash';
 import { SettingsButton } from './components/SettingsButton';
 import { SettingsPanel } from './components/SettingsPanel';
+import { DEBUG_OVERLAY_ENABLED } from './constants';
+import { detectionDebugStore } from './debug/detectionDebugStore';
 import { useCamera } from './hooks/useCamera';
 import { useCounter } from './hooks/useCounter';
 import { useGestureRecognizer } from './hooks/useGestureRecognizer';
@@ -39,6 +42,7 @@ function App() {
     videoRef,
     enabled: isCameraReady && !isSettingsOpen,
     onGesture: handleGesture,
+    onDetection: DEBUG_OVERLAY_ENABLED ? detectionDebugStore.publish : undefined,
   });
 
   const openSettings = useCallback(() => {
@@ -54,6 +58,7 @@ function App() {
       <GestureStatus stage={stage} notice={getGestureNotice(cameraError, recognizerStatus)} />
       <SettingsButton onClick={openSettings} />
       <SettingsPanel open={isSettingsOpen} onClose={closeSettings} onReset={reset} />
+      {DEBUG_OVERLAY_ENABLED && <DebugOverlay stage={stage} />}
       <ScreenFlash trigger={flashTrigger} />
     </main>
   );

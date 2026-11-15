@@ -2,6 +2,8 @@ import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { clamp } from './clamp';
 
 export interface CropRect {
+  /** The person's own left/right hand (MediaPipe Pose convention). */
+  hand: 'left' | 'right';
   x: number;
   y: number;
   size: number;
@@ -28,8 +30,8 @@ const POSE = {
 } as const;
 
 const HANDS = [
-  [POSE.leftWrist, POSE.leftPinky, POSE.leftIndex],
-  [POSE.rightWrist, POSE.rightPinky, POSE.rightIndex],
+  { hand: 'left', points: [POSE.leftWrist, POSE.leftPinky, POSE.leftIndex] },
+  { hand: 'right', points: [POSE.rightWrist, POSE.rightPinky, POSE.rightIndex] },
 ] as const;
 
 /**
@@ -50,16 +52,17 @@ export function computeHandCrops(landmarks: NormalizedLandmark[], options: HandC
   const maxSize = Math.min(frameWidth, frameHeight);
   const size = clamp(shoulderWidth * scale, minSizePx, maxSize);
 
-  return HANDS.flatMap(([wrist, ...fingers]) => {
-    const wristLm = landmarks[wrist];
+  return HANDS.flatMap(({ hand, points: indices }) => {
+    const wristLm = landmarks[indices[0]];
     if (!wristLm || wristLm.visibility < minVisibility) return [];
 
-    const points = [wrist, ...fingers].map((i) => landmarks[i]).filter(Boolean).map(toPx);
+    const points = indices.map((i) => landmarks[i]).filter(Boolean).map(toPx);
     const centerX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
     const centerY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
 
     return [
       {
+        hand,
         x: clamp(centerX - size / 2, 0, frameWidth - size),
         y: clamp(centerY - size / 2, 0, frameHeight - size),
         size,

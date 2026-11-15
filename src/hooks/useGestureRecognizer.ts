@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import { RECOGNITION_INTERVAL_MS } from '../constants';
 import { createGestureDetector } from '../detectors';
 import type { GestureDetector } from '../detectors';
-import type { DetectedGesture } from '../types/gesture';
+import type { DetectedGesture, DetectionResult } from '../types/gesture';
 
 export type RecognizerStatus = 'loading' | 'ready' | 'error';
 
@@ -11,19 +11,21 @@ interface UseGestureRecognizerOptions {
   videoRef: RefObject<HTMLVideoElement | null>;
   enabled: boolean;
   onGesture: (gesture: DetectedGesture | null) => void;
+  /** Optional raw per-frame result, e.g. for the debug overlay. */
+  onDetection?: (result: DetectionResult) => void;
 }
 
 /**
  * Loads the configured gesture detector once, then (while `enabled`) runs it on
  * the video at RECOGNITION_INTERVAL_MS and reports the top gesture (or null).
  */
-export function useGestureRecognizer({ videoRef, enabled, onGesture }: UseGestureRecognizerOptions) {
+export function useGestureRecognizer({ videoRef, enabled, onGesture, onDetection }: UseGestureRecognizerOptions) {
   const recognizerRef = useRef<GestureDetector | null>(null);
-  const onGestureRef = useRef(onGesture);
+  const callbacksRef = useRef({ onGesture, onDetection });
   const [status, setStatus] = useState<RecognizerStatus>('loading');
 
   useEffect(() => {
-    onGestureRef.current = onGesture;
+    callbacksRef.current = { onGesture, onDetection };
   });
 
   useEffect(() => {
@@ -67,7 +69,9 @@ export function useGestureRecognizer({ videoRef, enabled, onGesture }: UseGestur
       lastRunAt = now;
       lastVideoTime = video.currentTime;
 
-      onGestureRef.current(recognizer.detect(video, now));
+      const result = recognizer.detect(video, now);
+      callbacksRef.current.onGesture(result.gesture);
+      callbacksRef.current.onDetection?.(result);
     };
 
     frameId = requestAnimationFrame(tick);

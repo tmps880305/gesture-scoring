@@ -9,7 +9,15 @@ export const SWIPE_MIN_DISTANCE_PX = 50;
 // Gesture sequence (+1): FIRST_GESTURE -> SECOND_GESTURE
 export const FIRST_GESTURE = 'Victory';
 export const SECOND_GESTURE = 'Open_Palm';
-export const GESTURE_MIN_SCORE = 0.7;
+/** MediaPipe's "no gesture" category; never treated as a real gesture. */
+export const NO_GESTURE = 'None';
+/** Minimum confidence per gesture; gestures not listed use DEFAULT_GESTURE_MIN_SCORE. */
+export const DEFAULT_GESTURE_MIN_SCORE = 0.7;
+export const GESTURE_MIN_SCORES: Readonly<Record<string, number>> = {
+  [FIRST_GESTURE]: 0.7,
+  // Open_Palm scores ~0.68–0.71 on iPhone in long-range mode.
+  [SECOND_GESTURE]: 0.6,
+};
 export const GESTURE_MIN_CONSECUTIVE_FRAMES = 3;
 export const SEQUENCE_TIMEOUT_MS = 3000;
 export const SUCCESS_COOLDOWN_MS = 1500;
@@ -33,6 +41,10 @@ export const HAND_CROP_SCALE = 1.2;
 export const HAND_CROP_MIN_SIZE_PX = 96;
 /** Crops are resized to this square before gesture recognition. */
 export const HAND_CROP_OUTPUT_PX = 256;
+
+// Debug overlay: on in `npm run dev`, or in builds made with VITE_DEBUG_OVERLAY=true
+// (see `npm run build:ios:debug`).
+export const DEBUG_OVERLAY_ENABLED = import.meta.env.DEV || import.meta.env.VITE_DEBUG_OVERLAY === 'true';
 
 // MediaPipe assets, bundled in public/ by `npm run setup:mediapipe`
 export const MEDIAPIPE_WASM_PATH = `${import.meta.env.BASE_URL}wasm`;

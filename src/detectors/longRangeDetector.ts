@@ -6,10 +6,16 @@ import {
   POSE_MIN_VISIBILITY,
   POSE_MODEL_PATH,
 } from '../constants';
-import type { DetectedGesture } from '../types/gesture';
+import type { DetectionCandidate } from '../types/gesture';
 import { computeHandCrops } from '../utils/handCrop';
 import type { CropRect } from '../utils/handCrop';
-import { createGestureRecognizer, createWithGpuFallback, loadVisionFileset, toDetectedGesture } from './mediapipe';
+import {
+  createGestureRecognizer,
+  createWithGpuFallback,
+  loadVisionFileset,
+  pickBestGesture,
+  toDetectedGesture,
+} from './mediapipe';
 import type { GestureDetector } from './types';
 
 async function createPoseLandmarker(): Promise<PoseLandmarker> {
@@ -22,9 +28,6 @@ async function createPoseLandmarker(): Promise<PoseLandmarker> {
     }),
   );
 }
-
-const pickBest = (gestures: (DetectedGesture | null)[]): DetectedGesture | null =>
-  gestures.reduce<DetectedGesture | null>((best, g) => (g && (!best || g.score > best.score) ? g : best), null);
 
 /**
  * Long-range strategy: find the body with Pose, crop a zoomed square around
@@ -40,13 +43,18 @@ export async function createLongRangeDetector(): Promise<GestureDetector> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('2D canvas context unavailable');
 
-  const recognizeCrop = (video: HTMLVideoElement, crop: CropRect) => {
+  const recognizeCrop = (video: HTMLVideoElement, crop: CropRect): DetectionCandidate => {
     ctx.drawImage(video, crop.x, crop.y, crop.size, crop.size, 0, 0, HAND_CROP_OUTPUT_PX, HAND_CROP_OUTPUT_PX);
-    return toDetectedGesture(recognizer.recognize(canvas).gestures[0]?.[0]);
+    return {
+      source: crop.hand === 'left' ? 'leftHand' : 'rightHand',
+      gesture: toDetectedGesture(recognizer.recognize(canvas).gestures[0]?.[0]),
+    };
   };
 
-  const recognizeFullFrame = (video: HTMLVideoElement) =>
-    toDetectedGesture(recognizer.recognize(video).gestures[0]?.[0]);
+  const recognizeFullFrame = (video: HTMLVideoElement): DetectionCandidate => ({
+    source: 'fullFrame',
+    gesture: toDetectedGesture(recognizer.recognize(video).gestures[0]?.[0]),
+  });
 
   return {
     detect: (video, timestampMs) => {
@@ -61,8 +69,9 @@ export async function createLongRangeDetector(): Promise<GestureDetector> {
           })
         : [];
 
-      if (crops.length === 0) return recognizeFullFrame(video);
-      return pickBest(crops.map((crop) => recognizeCrop(video, crop)));
+      const candidates =
+        crops.length === 0 ? [recognizeFullFrame(video)] : crops.map((crop) => recognizeCrop(video, crop));
+      return { gesture: pickBestGesture(candidates), candidates };
     },
     close: () => {
       pose.close();

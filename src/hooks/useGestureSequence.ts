@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FIRST_GESTURE,
   GESTURE_MIN_CONSECUTIVE_FRAMES,
-  GESTURE_MIN_SCORE,
   SECOND_GESTURE,
   SEQUENCE_TIMEOUT_MS,
   SUCCESS_COOLDOWN_MS,
 } from '../constants';
 import type { DetectedGesture, GestureStage } from '../types/gesture';
+import { meetsGestureThreshold } from '../utils/gestureThreshold';
 
 interface UseGestureSequenceOptions {
   /** Called whenever a single step (first or second gesture) is confirmed. */
@@ -26,7 +26,7 @@ const TARGET_GESTURE: Record<GestureStage, string | null> = {
  * Two-step gesture state machine:
  * awaitingFirst --(first gesture)--> awaitingSecond --(second gesture)--> cooldown --> awaitingFirst
  * awaitingSecond falls back to awaitingFirst after SEQUENCE_TIMEOUT_MS.
- * A gesture counts only after GESTURE_MIN_CONSECUTIVE_FRAMES frames with score >= GESTURE_MIN_SCORE.
+ * A gesture counts only after GESTURE_MIN_CONSECUTIVE_FRAMES frames meeting its own minimum score.
  */
 export function useGestureSequence({ onStepMatched, onComplete }: UseGestureSequenceOptions) {
   const [stage, setStage] = useState<GestureStage>('awaitingFirst');
@@ -68,7 +68,7 @@ export function useGestureSequence({ onStepMatched, onComplete }: UseGestureSequ
       const target = TARGET_GESTURE[stageRef.current];
       if (!target) return;
 
-      const isMatch = gesture?.name === target && gesture.score >= GESTURE_MIN_SCORE;
+      const isMatch = gesture?.name === target && meetsGestureThreshold(gesture);
       streakRef.current = isMatch ? streakRef.current + 1 : 0;
       if (streakRef.current < GESTURE_MIN_CONSECUTIVE_FRAMES) return;
 
