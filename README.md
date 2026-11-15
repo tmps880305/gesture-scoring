@@ -143,7 +143,8 @@ Xcode 的 build number（`CURRENT_PROJECT_VERSION`）不會自動改。每次上
 | `SUCCESS_COOLDOWN_MS` | 1500 | +1 後的冷卻時間 |
 | `RECOGNITION_INTERVAL_MS` | 80 | 辨識間隔（約每秒 12.5 次），手機發熱時可以調大 |
 | `LONG_RANGE_MODE_ENABLED` | `true` | 是否啟用長距離辨識 |
-| `SCREEN_CORNER_RADIUS_PX` | 56 | 綠框圓角，用來配合 iPhone 螢幕圓角 |
+| `SCREEN_CORNER_RADIUS_PX` | 56 | 綠框圓角（iPhone），用來配合螢幕圓角 |
+| `TABLET_SCREEN_CORNER_RADIUS_PX` | 18 | 綠框圓角（iPad），螢幕短邊 ≥ `TABLET_MIN_SHORT_SIDE_PX`（600）時使用 |
 
 要新增辨識模式，在 `src/gestureModes.ts` 加一筆步驟列表即可，狀態機不用修改。
 
@@ -164,11 +165,21 @@ scripts/
   setup-mediapipe.mjs  # 複製 WASM、下載模型
   sync-ios-version.mjs # 同步版本號到 Xcode
   render-splash.swift  # 產生 iOS 啟動畫面（macOS）
+site/                  # 支援網站與隱私權政策（GitHub Pages）
 ios/                   # Capacitor iOS 專案
 ```
+
+## 支援網站
+
+`site/` 是 App Store 需要的支援頁和隱私權政策，是純靜態 HTML，不經過 Vite 打包。推送到 `main` 時，`.github/workflows/pages.yml` 會自動部署到 GitHub Pages：
+
+- 支援網址：https://tmps880305.github.io/gesture-scoring/
+- 隱私權政策：https://tmps880305.github.io/gesture-scoring/privacy.html
+
+第一次使用前，要先到 repo 的 Settings → Pages → Build and deployment，把 Source 設為 **GitHub Actions**。
 
 ## 已知限制
 
 - 最遠可辨識距離會受機型（前鏡頭視角、畫質、效能）和光線影響。
-- iOS 沒有公開的 API 可以取得螢幕圓角，綠框圓角用固定值近似。
+- iOS 沒有公開的 API 可以取得螢幕圓角，綠框圓角依螢幕大小用固定值近似（iPhone 56、iPad 18）。
 - 目前只支援 iOS（iPhone、iPad）；Android 版尚未實作。

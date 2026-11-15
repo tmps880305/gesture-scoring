@@ -11,10 +11,14 @@ export const LAUNCH_MAX_WAIT_MS = 10000;
 
 // Success flash border
 /**
- * Approximates the iPhone display corner radius (iOS exposes no public API for it).
- * Recent models are ~44–62pt; erring larger keeps the border from being clipped.
+ * Approximates the display corner radius (iOS exposes no public API for it).
+ * iPhone: recent models are ~44–62pt; erring larger keeps the border from being clipped.
+ * iPad: rounded-corner models are ~18pt.
  */
 export const SCREEN_CORNER_RADIUS_PX = 56;
+export const TABLET_SCREEN_CORNER_RADIUS_PX = 18;
+/** Screens whose short side is at least this wide are treated as tablets (iPad mini is 744pt, iPhones ≤ 440pt). */
+export const TABLET_MIN_SHORT_SIDE_PX = 600;
 /** Gap between the flash border and the screen edge. */
 export const SCREEN_FLASH_INSET_PX = 6;
 

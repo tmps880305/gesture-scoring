@@ -13,7 +13,6 @@ import {
   COUNTER_MAX,
   DEBUG_OVERLAY_ENABLED,
   GESTURE_MODE_STORAGE_KEY,
-  SCREEN_CORNER_RADIUS_PX,
   SCREEN_FLASH_INSET_PX,
 } from './constants';
 import { detectionDebugStore } from './debug/detectionDebugStore';
@@ -27,7 +26,11 @@ import { useLaunchSequence } from './hooks/useLaunchSequence';
 import { useLocalStorageState } from './hooks/useLocalStorageState';
 import { usePageVisibility } from './hooks/usePageVisibility';
 import type { GestureMode } from './types/gesture';
+import { getScreenCornerRadius } from './utils/screenCornerRadius';
 import styles from './App.module.css';
+
+// The physical screen never changes while the app runs, so compute once.
+const SCREEN_CORNER_RADIUS = getScreenCornerRadius();
 
 const getGestureNotice = (cameraError: string | null, recognizerStatus: RecognizerStatus) => {
   if (cameraError) return cameraError;
@@ -108,7 +111,7 @@ function App() {
       <EditCountButton onClick={openEdit} />
       <EditCountPanel open={isEditOpen} value={count} max={COUNTER_MAX} onClose={closeEdit} onSubmit={setCount} />
       {DEBUG_OVERLAY_ENABLED && <DebugOverlay stage={stage} steps={steps} />}
-      <ScreenFlash trigger={flashTrigger} cornerRadius={SCREEN_CORNER_RADIUS_PX} inset={SCREEN_FLASH_INSET_PX} />
+      <ScreenFlash trigger={flashTrigger} cornerRadius={SCREEN_CORNER_RADIUS} inset={SCREEN_FLASH_INSET_PX} />
       {launchPhase !== 'done' && <IntroAnimation playing={launchPhase === 'intro'} onFinish={finishIntro} />}
     </main>
   );
