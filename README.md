@@ -16,6 +16,7 @@ iPhone 橫向計數 App。畫面中央大大顯示一個 0–99 的數字，可�
 - 數字固定在 0–99 之間，不會循環。
 - 每段手勢成立時，螢幕邊框會閃一下綠框；+1 後有 1.5 秒冷卻，避免重複觸發。
 - 左上角會提示目前要比什麼手勢。
+- 啟動時 logo 會停留到手勢辨識模型載入完成，接著播放翻牌動畫，再進入主畫面。
 
 ## 技術架構
 
@@ -93,6 +94,29 @@ npm run build:ios:debug
 | `npm run build:ios` | 編譯、同步版本號，並同步到 iOS 專案 |
 | `npm run build:ios:debug` | 同上，但 App 會顯示偵錯資訊 |
 | `npm run sync:ios-version` | 把 `package.json` 的版本寫入 Xcode 的 `MARKETING_VERSION` |
+| `npm run generate:ios-splash` | 用 `src/assets/tekazu-logo.svg` 重新產生 iOS 啟動畫面（僅限 macOS） |
+
+## 圖示與啟動畫面
+
+原始檔放在 `src/assets/`：
+
+| 檔案 | 用途 |
+|---|---|
+| `tekazu-appstore-1024.png` | iOS App 圖示，複製到 `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` |
+| `tekazu-icon.svg` | 網頁 favicon，複製到 `public/favicon.svg` |
+| `tekazu-logo.svg` | iOS 啟動畫面（執行 `npm run generate:ios-splash` 產生），以及啟動翻牌動畫 |
+
+啟動畫面是 2732×2732 的 PNG：背景為深色 `#0f1115`，與 App 背景相同，logo 1100px 置中。logo 更新後重跑一次 `npm run generate:ios-splash` 即可。這個指令用 Swift／AppKit 轉檔 SVG，所以只能在 macOS 上執行。
+
+啟動流程使用 `@capacitor/splash-screen`（`launchAutoHide: false`）：
+
+1. 原生啟動畫面會一直顯示，直到模型載入完成，最多等 10 秒（`LAUNCH_MAX_WAIT_MS`）。
+2. 網頁端在完全相同的位置顯示同一個 logo，接著隱藏原生啟動畫面，所以切換時看不出來。
+3. 播放翻牌動畫（`src/components/IntroAnimation.tsx`）後進入主畫面。
+
+如果改了 `generate:ios-splash` 的 canvas 或 logo 尺寸，要一起修改 `IntroAnimation.module.css` 的 `.logo` 寬度（`1100 / 2732 × 100vmax`），不然切換時 logo 會跳動。
+
+> iOS 會快取 App 圖示和啟動畫面，更新後如果手機上看不到變化，請刪除 App 再重新安裝。
 
 ## 版本號
 
@@ -139,6 +163,7 @@ src/
 scripts/
   setup-mediapipe.mjs  # 複製 WASM、下載模型
   sync-ios-version.mjs # 同步版本號到 Xcode
+  render-splash.swift  # 產生 iOS 啟動畫面（macOS）
 ios/                   # Capacitor iOS 專案
 ```
 

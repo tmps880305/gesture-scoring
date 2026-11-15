@@ -6,6 +6,9 @@ export const COUNTER_INITIAL = 0;
 // Vertical swipe on the number: down = +1, up = -1
 export const SWIPE_MIN_DISTANCE_PX = 50;
 
+// Launch: native splash stays until gesture models load (or this timeout), then the flip intro plays.
+export const LAUNCH_MAX_WAIT_MS = 10000;
+
 // Success flash border
 /**
  * Approximates the iPhone display corner radius (iOS exposes no public API for it).

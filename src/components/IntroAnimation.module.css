@@ -1,0 +1,119 @@
+/*
+ * Timeline (~1.25s): left tile flips at 0ms, right tile at 150ms (500ms each),
+ * short hold, then the overlay fades out at 900ms over 350ms.
+ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+}
+
+.exit {
+  animation: overlay-out 350ms ease-in 900ms forwards;
+}
+
+/*
+ * Must match the native splash exactly: `npm run generate:ios-splash` draws the
+ * 1024-unit logo at 1100px on a 2732px canvas, shown with aspectFill
+ * (scaled to the longer screen side). So width = 1100 / 2732 of 100vmax.
+ */
+.logo {
+  position: relative;
+  width: calc(100vmax * 1100 / 2732);
+  aspect-ratio: 1;
+}
+
+/* Tile bounds in the 1024-unit logo: x 182–482 / 542–842, y 302–722, split at 50%. */
+.tileLeft,
+.tileRight {
+  --edge-top: 29.49%;
+  --edge-bottom: 29.49%;
+}
+
+.tileLeft {
+  --edge-left: 17.77%;
+  --edge-right: 52.93%;
+  --flip-delay: 0ms;
+}
+
+.tileRight {
+  --edge-left: 52.93%;
+  --edge-right: 17.77%;
+  --flip-delay: 150ms;
+}
+
+.half {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Flip axis = the logo's horizontal split line. */
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.top {
+  clip-path: inset(var(--edge-top) var(--edge-right) 50% var(--edge-left));
+}
+
+.bottom {
+  clip-path: inset(50% var(--edge-right) var(--edge-bottom) var(--edge-left));
+}
+
+/* Top flap falls toward the viewer, then the bottom flap lands. */
+.flapTop {
+  animation: flap-top 250ms ease-in var(--flip-delay) both;
+}
+
+.flapBottom {
+  animation: flap-bottom 250ms ease-out calc(var(--flip-delay) + 250ms) both;
+}
+
+@keyframes flap-top {
+  from {
+    transform: perspective(600px) rotateX(0deg);
+    filter: brightness(1);
+  }
+  to {
+    transform: perspective(600px) rotateX(-90deg);
+    filter: brightness(0.6);
+  }
+}
+
+@keyframes flap-bottom {
+  from {
+    transform: perspective(600px) rotateX(90deg);
+    filter: brightness(0.6);
+  }
+  to {
+    transform: perspective(600px) rotateX(0deg);
+    filter: brightness(1);
+  }
+}
+
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flapTop,
+  .flapBottom {
+    animation: none;
+    display: none;
+  }
+
+  .exit {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+}
