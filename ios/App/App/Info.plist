@@ -24,6 +24,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>需要使用前鏡頭辨識手勢來增加數字。影像只在裝置上處理，不會上傳。</string>
 	<key>UIApplicationSceneManifest</key>
