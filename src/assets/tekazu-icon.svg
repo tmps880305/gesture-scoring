@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Tekazu">
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+  <g fill="#2B8AD0">
+    <rect x="182" y="302" width="300" height="420" rx="48"/>
+    <rect x="542" y="302" width="300" height="420" rx="48"/>
+  </g>
+  <g fill="#FFFFFF">
+    <!-- T -->
+    <rect x="247" y="397" width="170" height="50"/>
+    <rect x="307" y="397" width="50" height="230"/>
+    <!-- Z -->
+    <rect x="607" y="397" width="170" height="50"/>
+    <rect x="607" y="577" width="170" height="50"/>
+    <polygon points="717,447 777,447 667,577 607,577"/>
+    <!-- flip split line -->
+    <rect x="182" y="507" width="300" height="10"/>
+    <rect x="542" y="507" width="300" height="10"/>
+  </g>
+</svg>

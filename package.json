@@ -1,19 +1,30 @@
 {
   "name": "gesture-scoring",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup:mediapipe": "node scripts/setup-mediapipe.mjs",
+    "postinstall": "npm run setup:mediapipe",
+    "build:ios": "npm run build && npm run sync:ios-version && cap sync ios",
+    "build:ios:debug": "VITE_DEBUG_OVERLAY=true npm run build:ios",
+    "sync:ios-version": "node scripts/sync-ios-version.mjs",
+    "generate:ios-splash": "swift scripts/render-splash.swift src/assets/tekazu-logo.svg 2732 1100 '#0f1115' ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png"
   },
   "dependencies": {
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@mediapipe/tasks-vision": "^1.2.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
