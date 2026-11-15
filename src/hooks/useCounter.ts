@@ -10,6 +10,7 @@ export function useCounter(initialValue: number = COUNTER_INITIAL) {
   const increment = useCallback(() => setCount((c) => clampCount(c + 1)), []);
   const decrement = useCallback(() => setCount((c) => clampCount(c - 1)), []);
   const reset = useCallback(() => setCount(COUNTER_INITIAL), []);
+  const set = useCallback((value: number) => setCount(clampCount(Math.trunc(value))), []);
 
-  return { count, increment, decrement, reset };
+  return { count, increment, decrement, reset, set };
 }

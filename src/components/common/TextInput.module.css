@@ -1,0 +1,19 @@
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 2px solid var(--color-surface-alt);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  /* >= 16px prevents iOS from zooming in on focus. */
+  font-size: 20px;
+  font-weight: 600;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}

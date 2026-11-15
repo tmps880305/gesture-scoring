@@ -6,6 +6,15 @@ export const COUNTER_INITIAL = 0;
 // Vertical swipe on the number: down = +1, up = -1
 export const SWIPE_MIN_DISTANCE_PX = 50;
 
+// Success flash border
+/**
+ * Approximates the iPhone display corner radius (iOS exposes no public API for it).
+ * Recent models are ~44–62pt; erring larger keeps the border from being clipped.
+ */
+export const SCREEN_CORNER_RADIUS_PX = 56;
+/** Gap between the flash border and the screen edge. */
+export const SCREEN_FLASH_INSET_PX = 6;
+
 // Gesture modes (+1) — see src/gestureModes.ts
 // "sequence": FIRST_GESTURE -> SECOND_GESTURE
 export const FIRST_GESTURE = 'Victory';
