@@ -8,7 +8,7 @@ export const SWIPE_MIN_DISTANCE_PX = 50;
 
 // Gesture sequence (+1): FIRST_GESTURE -> SECOND_GESTURE
 export const FIRST_GESTURE = 'Victory';
-export const SECOND_GESTURE = 'Thumb_Up';
+export const SECOND_GESTURE = 'Open_Palm';
 export const GESTURE_MIN_SCORE = 0.7;
 export const GESTURE_MIN_CONSECUTIVE_FRAMES = 3;
 export const SEQUENCE_TIMEOUT_MS = 3000;

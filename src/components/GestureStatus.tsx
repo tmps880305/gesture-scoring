@@ -9,7 +9,7 @@ interface GestureStatusProps {
 
 const STAGE_MESSAGE: Record<GestureStage, string> = {
   awaitingFirst: '請比 ✌️',
-  awaitingSecond: '請比 👍',
+  awaitingSecond: '請比 🖐️',
   cooldown: '+1 成功',
 };
 
