@@ -67,7 +67,12 @@ function App() {
   return (
     <main className={styles.app}>
       <CameraVideo ref={videoRef} className={styles.hiddenVideo} />
-      <CounterDisplay value={count} onSwipeDown={decrement} swipeEnabled={!isSettingsOpen} />
+      <CounterDisplay
+        value={count}
+        onSwipeDown={increment}
+        onSwipeUp={decrement}
+        swipeEnabled={!isSettingsOpen}
+      />
       <GestureStatus stage={stage} steps={steps} notice={getGestureNotice(cameraError, recognizerStatus)} />
       <SettingsButton onClick={openSettings} />
       <SettingsPanel

@@ -1,14 +1,15 @@
-import { useSwipeDown } from '../hooks/useSwipeDown';
+import { useVerticalSwipe } from '../hooks/useVerticalSwipe';
 import styles from './CounterDisplay.module.css';
 
 interface CounterDisplayProps {
   value: number;
-  onSwipeDown: () => void;
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
   swipeEnabled?: boolean;
 }
 
-export function CounterDisplay({ value, onSwipeDown, swipeEnabled = true }: CounterDisplayProps) {
-  const swipeHandlers = useSwipeDown({ onSwipeDown, enabled: swipeEnabled });
+export function CounterDisplay({ value, onSwipeUp, onSwipeDown, swipeEnabled = true }: CounterDisplayProps) {
+  const swipeHandlers = useVerticalSwipe({ onSwipeUp, onSwipeDown, enabled: swipeEnabled });
 
   return (
     <div className={styles.area} {...swipeHandlers}>

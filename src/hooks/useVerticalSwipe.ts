@@ -2,8 +2,9 @@ import { useCallback, useRef } from 'react';
 import type { PointerEvent } from 'react';
 import { SWIPE_MIN_DISTANCE_PX } from '../constants';
 
-interface UseSwipeDownOptions {
-  onSwipeDown: () => void;
+interface UseVerticalSwipeOptions {
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
   enabled?: boolean;
   minDistance?: number;
 }
@@ -14,14 +15,15 @@ interface Point {
 }
 
 /**
- * Detects a single top-to-bottom swipe per pointer gesture.
+ * Detects at most one vertical swipe (up or down) per pointer gesture.
  * Returns pointer handlers to spread onto the target element.
  */
-export function useSwipeDown({
+export function useVerticalSwipe({
+  onSwipeUp,
   onSwipeDown,
   enabled = true,
   minDistance = SWIPE_MIN_DISTANCE_PX,
-}: UseSwipeDownOptions) {
+}: UseVerticalSwipeOptions) {
   const startRef = useRef<Point | null>(null);
 
   const onPointerDown = useCallback(
@@ -40,10 +42,13 @@ export function useSwipeDown({
 
       const dx = e.clientX - start.x;
       const dy = e.clientY - start.y;
-      const isDownward = dy >= minDistance && Math.abs(dy) > Math.abs(dx);
-      if (isDownward) onSwipeDown();
+      const isVertical = Math.abs(dy) >= minDistance && Math.abs(dy) > Math.abs(dx);
+      if (!isVertical) return;
+
+      if (dy > 0) onSwipeDown?.();
+      else onSwipeUp?.();
     },
-    [enabled, minDistance, onSwipeDown],
+    [enabled, minDistance, onSwipeUp, onSwipeDown],
   );
 
   const onPointerCancel = useCallback(() => {
