@@ -1,0 +1,28 @@
+.button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:active {
+  opacity: 0.7;
+}
+
+.primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.secondary {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.danger {
+  background: var(--color-danger);
+  color: #fff;
+}

@@ -1,0 +1,20 @@
+.fullWidth {
+  width: 100%;
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  margin: 0;
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
