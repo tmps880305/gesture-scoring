@@ -1,0 +1,17 @@
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  box-shadow: inset 0 0 0 8px var(--color-success);
+  pointer-events: none;
+  animation: fade-out 500ms ease-out forwards;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
