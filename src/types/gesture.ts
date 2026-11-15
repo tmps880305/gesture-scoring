@@ -3,7 +3,17 @@ export interface DetectedGesture {
   score: number;
 }
 
-export type GestureStage = 'awaitingFirst' | 'awaitingSecond' | 'cooldown';
+export type GestureMode = 'sequence' | 'hold';
+
+/** One step of a gesture mode: hold `gesture` for `minFrames` consecutive frames. */
+export interface GestureStep {
+  gesture: string;
+  minFrames: number;
+  /** Status hint shown while waiting for this step. */
+  prompt: string;
+}
+
+export type GestureStage = { kind: 'awaiting'; stepIndex: number } | { kind: 'cooldown' };
 
 /** Where a candidate came from: a crop around one hand, or the whole frame. */
 export type DetectionSource = 'leftHand' | 'rightHand' | 'fullFrame';

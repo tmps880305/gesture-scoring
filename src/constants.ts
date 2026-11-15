@@ -6,9 +6,16 @@ export const COUNTER_INITIAL = 0;
 // Swipe down (-1)
 export const SWIPE_MIN_DISTANCE_PX = 50;
 
-// Gesture sequence (+1): FIRST_GESTURE -> SECOND_GESTURE
+// Gesture modes (+1) — see src/gestureModes.ts
+// "sequence": FIRST_GESTURE -> SECOND_GESTURE
 export const FIRST_GESTURE = 'Victory';
 export const SECOND_GESTURE = 'Open_Palm';
+export const GESTURE_MIN_CONSECUTIVE_FRAMES = 3;
+// "hold": keep HOLD_GESTURE for HOLD_MIN_CONSECUTIVE_FRAMES frames
+export const HOLD_GESTURE = 'Thumb_Up';
+export const HOLD_MIN_CONSECUTIVE_FRAMES = 5;
+export const GESTURE_MODE_STORAGE_KEY = 'gestureMode';
+
 /** MediaPipe's "no gesture" category; never treated as a real gesture. */
 export const NO_GESTURE = 'None';
 /** Minimum confidence per gesture; gestures not listed use DEFAULT_GESTURE_MIN_SCORE. */
@@ -17,8 +24,9 @@ export const GESTURE_MIN_SCORES: Readonly<Record<string, number>> = {
   [FIRST_GESTURE]: 0.7,
   // Open_Palm scores ~0.68–0.71 on iPhone in long-range mode.
   [SECOND_GESTURE]: 0.6,
+  [HOLD_GESTURE]: 0.6,
 };
-export const GESTURE_MIN_CONSECUTIVE_FRAMES = 3;
+/** Max wait between steps of a multi-step mode before falling back to step 1. */
 export const SEQUENCE_TIMEOUT_MS = 3000;
 export const SUCCESS_COOLDOWN_MS = 1500;
 

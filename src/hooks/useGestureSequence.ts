@@ -1,42 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FIRST_GESTURE,
-  GESTURE_MIN_CONSECUTIVE_FRAMES,
-  SECOND_GESTURE,
-  SEQUENCE_TIMEOUT_MS,
-  SUCCESS_COOLDOWN_MS,
-} from '../constants';
-import type { DetectedGesture, GestureStage } from '../types/gesture';
+import { SEQUENCE_TIMEOUT_MS, SUCCESS_COOLDOWN_MS } from '../constants';
+import type { DetectedGesture, GestureStage, GestureStep } from '../types/gesture';
 import { meetsGestureThreshold } from '../utils/gestureThreshold';
 
 interface UseGestureSequenceOptions {
-  /** Called whenever a single step (first or second gesture) is confirmed. */
+  steps: readonly GestureStep[];
+  /** Called whenever a single step is confirmed. */
   onStepMatched?: () => void;
-  /** Called when the full sequence completes. */
+  /** Called when the last step is confirmed. */
   onComplete: () => void;
 }
 
-const TARGET_GESTURE: Record<GestureStage, string | null> = {
-  awaitingFirst: FIRST_GESTURE,
-  awaitingSecond: SECOND_GESTURE,
-  cooldown: null,
-};
+const INITIAL_STAGE: GestureStage = { kind: 'awaiting', stepIndex: 0 };
 
 /**
- * Two-step gesture state machine:
- * awaitingFirst --(first gesture)--> awaitingSecond --(second gesture)--> cooldown --> awaitingFirst
- * awaitingSecond falls back to awaitingFirst after SEQUENCE_TIMEOUT_MS.
- * A gesture counts only after GESTURE_MIN_CONSECUTIVE_FRAMES frames meeting its own minimum score.
+ * Generic multi-step gesture state machine:
+ * step 0 -> step 1 -> ... -> last step -> cooldown -> step 0
+ * Each step needs `minFrames` consecutive frames meeting the gesture's minimum score.
+ * Waiting on a later step falls back to step 0 after SEQUENCE_TIMEOUT_MS.
+ * Call `reset()` after changing `steps`.
  */
-export function useGestureSequence({ onStepMatched, onComplete }: UseGestureSequenceOptions) {
-  const [stage, setStage] = useState<GestureStage>('awaitingFirst');
-  const stageRef = useRef<GestureStage>('awaitingFirst');
+export function useGestureSequence({ steps, onStepMatched, onComplete }: UseGestureSequenceOptions) {
+  const [stage, setStage] = useState<GestureStage>(INITIAL_STAGE);
+  const stageRef = useRef<GestureStage>(INITIAL_STAGE);
   const streakRef = useRef(0);
   const timerRef = useRef<number | undefined>(undefined);
-  const callbacksRef = useRef({ onStepMatched, onComplete });
+  const latestRef = useRef({ steps, onStepMatched, onComplete });
 
   useEffect(() => {
-    callbacksRef.current = { onStepMatched, onComplete };
+    latestRef.current = { steps, onStepMatched, onComplete };
   });
 
   const clearTimer = useCallback(() => {
@@ -55,29 +47,34 @@ export function useGestureSequence({ onStepMatched, onComplete }: UseGestureSequ
       clearTimer();
       setStageNow(next);
       if (fallbackAfterMs !== undefined) {
-        timerRef.current = window.setTimeout(() => setStageNow('awaitingFirst'), fallbackAfterMs);
+        timerRef.current = window.setTimeout(() => setStageNow(INITIAL_STAGE), fallbackAfterMs);
       }
     },
     [clearTimer, setStageNow],
   );
 
-  const reset = useCallback(() => transition('awaitingFirst'), [transition]);
+  const reset = useCallback(() => transition(INITIAL_STAGE), [transition]);
 
   const handleGesture = useCallback(
     (gesture: DetectedGesture | null) => {
-      const target = TARGET_GESTURE[stageRef.current];
-      if (!target) return;
+      const current = stageRef.current;
+      if (current.kind !== 'awaiting') return;
 
-      const isMatch = gesture?.name === target && meetsGestureThreshold(gesture);
+      const { steps: currentSteps, onStepMatched: stepMatched, onComplete: complete } = latestRef.current;
+      const step = currentSteps[current.stepIndex];
+      if (!step) return;
+
+      const isMatch = gesture?.name === step.gesture && meetsGestureThreshold(gesture);
       streakRef.current = isMatch ? streakRef.current + 1 : 0;
-      if (streakRef.current < GESTURE_MIN_CONSECUTIVE_FRAMES) return;
+      if (streakRef.current < step.minFrames) return;
 
-      callbacksRef.current.onStepMatched?.();
-      if (stageRef.current === 'awaitingFirst') {
-        transition('awaitingSecond', SEQUENCE_TIMEOUT_MS);
+      stepMatched?.();
+      const isLastStep = current.stepIndex === currentSteps.length - 1;
+      if (isLastStep) {
+        complete();
+        transition({ kind: 'cooldown' }, SUCCESS_COOLDOWN_MS);
       } else {
-        callbacksRef.current.onComplete();
-        transition('cooldown', SUCCESS_COOLDOWN_MS);
+        transition({ kind: 'awaiting', stepIndex: current.stepIndex + 1 }, SEQUENCE_TIMEOUT_MS);
       }
     },
     [transition],
