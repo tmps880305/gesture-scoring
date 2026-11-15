@@ -7,9 +7,18 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WASM_SRC = resolve(ROOT, 'node_modules/@mediapipe/tasks-vision/wasm');
 const WASM_DEST = resolve(ROOT, 'public/wasm');
-const MODEL_URL =
-  'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task';
-const MODEL_DEST = resolve(ROOT, 'public/models/gesture_recognizer.task');
+const MODELS_DEST_DIR = resolve(ROOT, 'public/models');
+const MODEL_BASE_URL = 'https://storage.googleapis.com/mediapipe-models';
+const MODELS = [
+  {
+    file: 'gesture_recognizer.task',
+    url: `${MODEL_BASE_URL}/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task`,
+  },
+  {
+    file: 'pose_landmarker_lite.task',
+    url: `${MODEL_BASE_URL}/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task`,
+  },
+];
 
 const exists = async (path) => {
   try {
@@ -29,17 +38,18 @@ async function copyWasm() {
   console.log('[mediapipe] WASM copied to public/wasm');
 }
 
-async function downloadModel() {
-  if (await exists(MODEL_DEST)) {
-    console.log('[mediapipe] Model already exists, skipped download');
+async function downloadModel({ file, url }) {
+  const dest = resolve(MODELS_DEST_DIR, file);
+  if (await exists(dest)) {
+    console.log(`[mediapipe] ${file} already exists, skipped download`);
     return;
   }
-  const res = await fetch(MODEL_URL);
-  if (!res.ok) throw new Error(`Model download failed: ${res.status} ${res.statusText}`);
-  await mkdir(dirname(MODEL_DEST), { recursive: true });
-  await writeFile(MODEL_DEST, Buffer.from(await res.arrayBuffer()));
-  console.log('[mediapipe] Model downloaded to public/models');
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${file} download failed: ${res.status} ${res.statusText}`);
+  await mkdir(MODELS_DEST_DIR, { recursive: true });
+  await writeFile(dest, Buffer.from(await res.arrayBuffer()));
+  console.log(`[mediapipe] ${file} downloaded to public/models`);
 }
 
 await copyWasm();
-await downloadModel();
+for (const model of MODELS) await downloadModel(model);

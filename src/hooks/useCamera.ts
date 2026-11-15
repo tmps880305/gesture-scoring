@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { CAMERA_IDEAL_HEIGHT, CAMERA_IDEAL_WIDTH } from '../constants';
 
 interface UseCameraOptions {
   enabled: boolean;
@@ -6,8 +7,8 @@ interface UseCameraOptions {
 
 const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
   facingMode: 'user',
-  width: { ideal: 640 },
-  height: { ideal: 480 },
+  width: { ideal: CAMERA_IDEAL_WIDTH },
+  height: { ideal: CAMERA_IDEAL_HEIGHT },
 };
 
 const stopStream = (stream: MediaStream | null) => {
