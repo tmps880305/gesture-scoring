@@ -1,7 +1,7 @@
 {
   "name": "gesture-scoring",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +10,9 @@
     "preview": "vite preview",
     "setup:mediapipe": "node scripts/setup-mediapipe.mjs",
     "postinstall": "npm run setup:mediapipe",
-    "build:ios": "npm run build && cap sync ios",
-    "build:ios:debug": "VITE_DEBUG_OVERLAY=true npm run build:ios"
+    "build:ios": "npm run build && npm run sync:ios-version && cap sync ios",
+    "build:ios:debug": "VITE_DEBUG_OVERLAY=true npm run build:ios",
+    "sync:ios-version": "node scripts/sync-ios-version.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.6.2",
