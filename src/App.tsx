@@ -35,7 +35,7 @@ const SCREEN_CORNER_RADIUS = getScreenCornerRadius();
 const getGestureNotice = (cameraError: string | null, recognizerStatus: RecognizerStatus) => {
   if (cameraError) return cameraError;
   if (recognizerStatus === 'loading') return '手勢辨識載入中…';
-  if (recognizerStatus === 'error') return '手勢辨識載入失敗';
+  if (recognizerStatus === 'error') return '此裝置無法使用手勢辨識';
   return null;
 };
 
@@ -59,11 +59,13 @@ function App() {
     reset: resetSequence,
   } = useGestureSequence({ steps, onStepMatched: flash, onComplete: increment });
 
+  const isRecognitionEnabled = isCameraReady && !isModalOpen && isIntroDone;
   const { status: recognizerStatus } = useGestureRecognizer({
     videoRef,
-    enabled: isCameraReady && !isModalOpen && isIntroDone,
+    enabled: isRecognitionEnabled,
     onGesture: handleGesture,
     onDetection: DEBUG_OVERLAY_ENABLED ? detectionDebugStore.publish : undefined,
+    onDiagnostic: DEBUG_OVERLAY_ENABLED ? detectionDebugStore.reportDiagnostic : undefined,
   });
 
   const launchPhase = useLaunchSequence({ isAppReady: recognizerStatus !== 'loading', isIntroDone });
@@ -110,7 +112,15 @@ function App() {
       />
       <EditCountButton onClick={openEdit} />
       <EditCountPanel open={isEditOpen} value={count} max={COUNTER_MAX} onClose={closeEdit} onSubmit={setCount} />
-      {DEBUG_OVERLAY_ENABLED && <DebugOverlay stage={stage} steps={steps} />}
+      {DEBUG_OVERLAY_ENABLED && (
+        <DebugOverlay
+          stage={stage}
+          steps={steps}
+          videoRef={videoRef}
+          cameraReady={isCameraReady}
+          recognitionEnabled={isRecognitionEnabled}
+        />
+      )}
       <ScreenFlash trigger={flashTrigger} cornerRadius={SCREEN_CORNER_RADIUS} inset={SCREEN_FLASH_INSET_PX} />
       {launchPhase !== 'done' && <IntroAnimation playing={launchPhase === 'intro'} onFinish={finishIntro} />}
     </main>

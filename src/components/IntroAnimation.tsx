@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { AnimationEvent } from 'react';
 import logoUrl from '../assets/tekazu-logo.svg';
 import styles from './IntroAnimation.module.css';
@@ -12,6 +13,12 @@ interface IntroAnimationProps {
 const TILES = [styles.tileLeft, styles.tileRight];
 
 /**
+ * Safety net if `animationend` never arrives (seen on iPadOS 17): the CSS
+ * timeline ends at ~1250ms, so finish shortly after regardless.
+ */
+const FINISH_FALLBACK_MS = 1600;
+
+/**
  * Full-screen launch intro. The static state is pixel-identical to the iOS
  * launch splash; when `playing`, each logo tile flips like a split-flap
  * display, then the overlay fades out to reveal the app.
@@ -21,6 +28,12 @@ export function IntroAnimation({ playing, onFinish }: IntroAnimationProps) {
     // Child flap animations bubble up; only the overlay's own fade-out finishes the intro.
     if (e.target === e.currentTarget) onFinish();
   };
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = window.setTimeout(onFinish, FINISH_FALLBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [playing, onFinish]);
 
   return (
     <div

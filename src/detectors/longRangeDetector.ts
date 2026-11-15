@@ -11,7 +11,7 @@ import { computeHandCrops } from '../utils/handCrop';
 import type { CropRect } from '../utils/handCrop';
 import {
   createGestureRecognizer,
-  createWithGpuFallback,
+  createWithDelegate,
   loadVisionFileset,
   pickBestGesture,
   toDetectedGesture,
@@ -20,7 +20,7 @@ import type { GestureDetector } from './types';
 
 async function createPoseLandmarker(): Promise<PoseLandmarker> {
   const fileset = await loadVisionFileset();
-  return createWithGpuFallback((delegate) =>
+  return createWithDelegate((delegate) =>
     PoseLandmarker.createFromOptions(fileset, {
       baseOptions: { modelAssetPath: POSE_MODEL_PATH, delegate },
       runningMode: 'VIDEO',

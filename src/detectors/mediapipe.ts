@@ -1,6 +1,6 @@
 import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 import type { Category } from '@mediapipe/tasks-vision';
-import { GESTURE_MODEL_PATH, MEDIAPIPE_WASM_PATH, NO_GESTURE } from '../constants';
+import { GESTURE_MODEL_PATH, MEDIAPIPE_DELEGATE, MEDIAPIPE_WASM_PATH, NO_GESTURE } from '../constants';
 import type { DetectedGesture, DetectionCandidate } from '../types/gesture';
 
 type Delegate = 'GPU' | 'CPU';
@@ -15,8 +15,9 @@ export const loadVisionFileset = (): Promise<WasmFileset> => {
   return filesetPromise;
 };
 
-/** Tries the GPU delegate first, falling back to CPU if it fails. */
-export async function createWithGpuFallback<T>(create: (delegate: Delegate) => Promise<T>): Promise<T> {
+/** Creates a task with MEDIAPIPE_DELEGATE; for 'GPU', falls back to CPU if creation fails. */
+export async function createWithDelegate<T>(create: (delegate: Delegate) => Promise<T>): Promise<T> {
+  if (MEDIAPIPE_DELEGATE === 'CPU') return create('CPU');
   try {
     return await create('GPU');
   } catch {
@@ -26,7 +27,7 @@ export async function createWithGpuFallback<T>(create: (delegate: Delegate) => P
 
 export async function createGestureRecognizer(runningMode: 'IMAGE' | 'VIDEO'): Promise<GestureRecognizer> {
   const fileset = await loadVisionFileset();
-  return createWithGpuFallback((delegate) =>
+  return createWithDelegate((delegate) =>
     GestureRecognizer.createFromOptions(fileset, {
       baseOptions: { modelAssetPath: GESTURE_MODEL_PATH, delegate },
       runningMode,

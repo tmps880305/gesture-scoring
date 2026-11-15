@@ -37,16 +37,35 @@ export function useCamera({ enabled }: UseCameraOptions) {
     let stream: MediaStream | null = null;
     const video = videoRef.current;
 
+    const markReady = () => {
+      if (cancelled) return;
+      setError(null);
+      setIsReady(true);
+    };
+
     const start = async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error('getUserMedia unavailable');
-        stream = await navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS, audio: false });
-        if (cancelled || !video) return;
-        video.srcObject = stream;
-        await video.play();
-        if (cancelled) return;
-        setError(null);
-        setIsReady(true);
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS, audio: false });
+        if (cancelled || !video) {
+          // Cancelled while waiting for the camera: release it instead of leaking it.
+          stopStream(newStream);
+          return;
+        }
+        stream = newStream;
+        video.srcObject = newStream;
+
+        // Readiness comes from the first decoded frame, not the play() promise:
+        // on some iPadOS 17 devices play() never settles even though playback starts.
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) markReady();
+        else video.addEventListener('loadeddata', markReady, { once: true });
+
+        video.play().catch((err: unknown) => {
+          // AbortError just means the source changed (e.g. app went to background).
+          if (!cancelled && !(err instanceof DOMException && err.name === 'AbortError')) {
+            setError(toErrorMessage(err));
+          }
+        });
       } catch (err) {
         if (!cancelled) setError(toErrorMessage(err));
       }
@@ -56,6 +75,7 @@ export function useCamera({ enabled }: UseCameraOptions) {
 
     return () => {
       cancelled = true;
+      video?.removeEventListener('loadeddata', markReady);
       stopStream(stream);
       if (video) video.srcObject = null;
       setIsReady(false);

@@ -1,3 +1,4 @@
+import type { RecognitionDiagnostic } from '../hooks/useGestureRecognizer';
 import type { DetectionResult } from '../types/gesture';
 
 export interface DetectionDebugSnapshot {
@@ -6,11 +7,29 @@ export interface DetectionDebugSnapshot {
   rate: number;
 }
 
+export interface LoopDiagnostics {
+  /** performance.now() of the last loop event, or null if the loop never ran. */
+  lastEventAt: number | null;
+  lastSkipReason: string | null;
+  lastDetectMs: number | null;
+  lastError: string | null;
+  errorCount: number;
+}
+
 const RATE_WINDOW_MS = 1000;
 
 let snapshot: DetectionDebugSnapshot = { result: null, rate: 0 };
 let recentTimes: number[] = [];
 const listeners = new Set<() => void>();
+
+// Updated on every loop tick, so it is mutable and read by polling (no re-render per tick).
+const diagnostics: LoopDiagnostics = {
+  lastEventAt: null,
+  lastSkipReason: null,
+  lastDetectMs: null,
+  lastError: null,
+  errorCount: 0,
+};
 
 /**
  * Tiny external store so the debug overlay can update every frame
@@ -30,4 +49,18 @@ export const detectionDebugStore = {
     };
   },
   getSnapshot: (): DetectionDebugSnapshot => snapshot,
+
+  reportDiagnostic(event: RecognitionDiagnostic) {
+    diagnostics.lastEventAt = performance.now();
+    if (event.type === 'skip') {
+      diagnostics.lastSkipReason = event.reason;
+    } else if (event.type === 'detected') {
+      diagnostics.lastSkipReason = null;
+      diagnostics.lastDetectMs = event.durationMs;
+    } else {
+      diagnostics.lastError = event.message;
+      diagnostics.errorCount += 1;
+    }
+  },
+  getDiagnostics: (): Readonly<LoopDiagnostics> => diagnostics,
 };

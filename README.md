@@ -143,6 +143,7 @@ Xcode 的 build number（`CURRENT_PROJECT_VERSION`）不會自動改。每次上
 | `SUCCESS_COOLDOWN_MS` | 1500 | +1 後的冷卻時間 |
 | `RECOGNITION_INTERVAL_MS` | 80 | 辨識間隔（約每秒 12.5 次），手機發熱時可以調大 |
 | `LONG_RANGE_MODE_ENABLED` | `true` | 是否啟用長距離辨識 |
+| `MEDIAPIPE_DELEGATE` | `'CPU'` | 模型運算方式；舊款 iPad（A10）用 GPU 會閃退，所以預設 CPU |
 | `SCREEN_CORNER_RADIUS_PX` | 56 | 綠框圓角（iPhone），用來配合螢幕圓角 |
 | `TABLET_SCREEN_CORNER_RADIUS_PX` | 18 | 綠框圓角（iPad），螢幕短邊 ≥ `TABLET_MIN_SHORT_SIDE_PX`（600）時使用 |
 

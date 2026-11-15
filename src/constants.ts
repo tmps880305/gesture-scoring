@@ -48,10 +48,17 @@ export const SUCCESS_COOLDOWN_MS = 1500;
 
 // Recognition loop (~12.5 runs per second)
 export const RECOGNITION_INTERVAL_MS = 80;
+/** Stop and report an error after this many detection failures in a row (e.g. unsupported device). */
+export const MAX_CONSECUTIVE_DETECT_ERRORS = 10;
 
 // Long-range mode (prototype): pose -> crop around each hand -> gesture.
 // Set to false to fall back to plain full-frame gesture recognition.
 export const LONG_RANGE_MODE_ENABLED = true;
+
+// MediaPipe inference backend. The GPU (WebGL) delegate crashes the WebView on
+// older iPads (A10, iPadOS 17), so default to CPU everywhere.
+// 'GPU' tries WebGL first and falls back to CPU if creation fails.
+export const MEDIAPIPE_DELEGATE: 'CPU' | 'GPU' = 'CPU';
 
 // Camera resolution (long-range needs more pixels to crop hands from)
 export const CAMERA_IDEAL_WIDTH = LONG_RANGE_MODE_ENABLED ? 1920 : 640;
